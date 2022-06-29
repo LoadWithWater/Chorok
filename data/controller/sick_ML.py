@@ -85,7 +85,7 @@ def predict(name):
     img=VALID_TRANSFORM(img)
     idx,temp=work(img)
     stat=[temp[i] for i in idx]
-    my_dict={'rust': 0,'frog eye leaf spot': 1,'healthy': 2,'powdery mildew': 3,'scab': 5,'rust':4}
+    my_dict={'rust': 0,'frog eye leaf spot': 1,'healthy': 2,'powdery mildew': 3,'scab': 4}#,'rust':4}
     #print(idx)
     def get_key(val):
         for key, value in my_dict.items():
@@ -97,4 +97,7 @@ def predict(name):
     for i in range(0,2):
         if stat[i]>=0.6:
             result_dict[get_key(idx[i])]=round(float(stat[i]),3)
+        # if get_key(idx[i]=='healthy') and stat[i]==1.0:
+        #     result_dict={'healthy':1.0}
+    print(json.dumps(result_dict))
     return json.dumps(result_dict)

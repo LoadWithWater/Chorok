@@ -1,16 +1,20 @@
 import React from "react";
 import { Box } from "@mui/material";
 
-import CommunityMain from "../components/community/CommunityMain"
+import CommunityMain from "../components/community/CommunityMain";
 
-const Community = () => {
+const Communitypage = ({ type }) => {
   return (
-    <>
-      <Box sx={{ mt: 12 }}>
-        <CommunityMain />
-      </Box>
-    </>
+    <Box
+      sx={{
+        my: 8,
+        color: "black",
+        overflow: "auto",
+      }}
+    >
+      <CommunityMain type={type} />
+    </Box>
   );
 };
 
-export default Community;
+export default Communitypage;

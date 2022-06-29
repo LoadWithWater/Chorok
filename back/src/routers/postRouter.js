@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { postService } from "../services/postService";
 import { userAuthService } from "../services/userService";
-import { s3Upload, s3Delete } from "../middlewares/multerS3";
+import { postValidate } from "../middlewares/postValidation";
 import { login_required } from "../middlewares/login_required";
 
 const postRouter = Router();
@@ -12,6 +12,7 @@ const postRouter = Router();
 postRouter.post(
   "/posts",
   login_required,
+  postValidate.createPost,
   async (req, res, next) => {
     try {
       //로그인한 유저의 고유id
@@ -44,37 +45,6 @@ postRouter.post(
     }
 });
 
-/*
- * Community : Post 이미지 업로드
- */
-postRouter.post(
-  "/image",
-  login_required,
-  s3Upload(),
-  async (req, res, next) => {
-    try{
-      const uploadFile = req.file;
-      const fileName = String(uploadFile.key).split("img/")[1];
-
-      if (!uploadFile){
-        return res.status(400).json({
-          success: false,
-          message: "업로드 실패"
-        });
-      } else {
-        return res.status(200).json({
-          success: true,
-          message: "업로드 성공",
-          imageURL : uploadFile.location,
-          fileName : fileName
-        });
-      };
-
-    } catch(error) {
-      next(error);
-    }
-  }
-)
   
 
 /*
@@ -86,7 +56,7 @@ postRouter.get(
   async (req, res, next) => {
     try {
       const postId = req.params.id;
-      const post =await postService.getPost(postId);
+      const post =await postService.getPostById(postId);
 
       const body = {
           success: true,
@@ -138,10 +108,18 @@ postRouter.get(
 postRouter.put(
   "/posts/:id",
   login_required,
+  postValidate.updatePost,
   async (req, res, next) => {
     try {
-      //const userId = req.currentUserId;
+      const userId = req.currentUserId;
       const postId = req.params.id;
+
+      const post = await postService.getPostById(postId);
+      
+      if(userId !== post.userId) {
+        const error = new Error("수정 권한이 없습니다.")
+        throw error;
+      }
 
       const category = req.body.category ?? null;
       const title = req.body.title ?? null;
@@ -172,7 +150,16 @@ postRouter.delete(
   login_required,
   async (req, res, next) => {
     try {
+      const userId = req.currentUserId;
       const postId = req.params.id;
+
+      const post = await postService.getPostById(postId);
+      
+      if(userId !== post.userId) {
+        const error = new Error("삭제 권한이 없습니다.")
+        throw error;
+      }
+
       const isDeleted = await postService.deletePost(postId);
 
       res.status(200).json(isDeleted);

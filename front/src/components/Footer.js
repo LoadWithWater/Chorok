@@ -1,94 +1,97 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, Tabs, Box } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import {
+  Box,
+  BottomNavigation,
+  BottomNavigationAction,
+  SliderValueLabel,
+} from "@mui/material";
 import FenceOutlinedIcon from "@mui/icons-material/FenceOutlined";
 import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
+import LocalHospitalOutlinedIcon from "@mui/icons-material/LocalHospitalOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-
-const StyledTabs = styled((props) => (
-  <Tabs
-    {...props}
-    TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
-  />
-))({
-  "& .MuiTabs-indicator": {
-    display: "flex",
-    justifyContent: "center",
-    backgroundColor: "transparent",
-  },
-  "& .MuiTabs-indicatorSpan": {
-    width: 0,
-  },
-});
-
-const LinkTab = (props) => {
-  return (
-    <Tab
-      component="a"
-      onClick={(event) => {
-        event.preventDefault();
-      }}
-      {...props}
-    />
-  );
-};
 
 const Footer = () => {
   const navigate = useNavigate();
-  const [value, setValue] = useState("1");
+  const [value, setValue] = useState(null);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (pathname === "/diagnosis") {
+      setValue("2");
+    } else if (pathname === "/community") {
+      setValue("3");
+    } else if (pathname == "/account") {
+      setValue("4");
+    } else {
+      setValue("1");
+    }
+  }, [pathname]);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  const { pathname } = useLocation();
+
+  // style
+  const footerStlye = {
+    position: "fixed",
+    bottom: 0,
+    bgcolor: "white",
+    width: "100%",
+    py: 1,
+    zIndex: 1,
+    borderTop: "2px solid #f1f3f5",
+  };
+
   if (pathname === "/login" || pathname === "/register") return null;
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        bottom: 0,
-        bgcolor: "white",
-        width: "100%",
-        py: 1,
-        zIndex: 1,
-        borderTop: "2px solid #f1f3f5",
-      }}
-    >
-      <StyledTabs value={value} onChange={handleChange} textColor="inherit">
-        <LinkTab
-          icon={<CalendarMonthOutlinedIcon />}
-          value="1"
-          sx={{ fontSize: "0.5rem", flexGrow: 1 }}
-          onClick={() => {
-            navigate("/");
-          }}
-        />
-        <LinkTab
+    <Box sx={footerStlye}>
+      <BottomNavigation
+        value={value}
+        onChange={handleChange}
+        sx={{
+          "& .Mui-selected, .Mui-selected > svg": {
+            color: "black",
+          },
+        }}
+      >
+        <BottomNavigationAction
           icon={<FenceOutlinedIcon />}
-          value="2"
+          value="1"
+          label="MyGarden"
           sx={{ fontSize: "0.5rem", flexGrow: 1 }}
           onClick={() => {
             navigate("/mygarden");
           }}
         />
-        <LinkTab
+        <BottomNavigationAction
+          icon={<LocalHospitalOutlinedIcon />}
+          value="2"
+          label="Diagnosis"
+          sx={{ fontSize: "0.5rem", flexGrow: 1 }}
+          onClick={() => {
+            navigate("/diagnosis");
+          }}
+        />
+        <BottomNavigationAction
           icon={<ForumOutlinedIcon />}
           value="3"
+          label="Community"
           sx={{ fontSize: "0.5rem", flexGrow: 1 }}
           onClick={() => {
             navigate("/community");
           }}
         />
-        <LinkTab
+        <BottomNavigationAction
           icon={<SettingsOutlinedIcon />}
           value="4"
+          label="Account"
           sx={{ fontSize: "0.5rem", flexGrow: 1 }}
           onClick={() => {
             navigate("/account");
           }}
         />
-      </StyledTabs>
+      </BottomNavigation>
     </Box>
   );
 };

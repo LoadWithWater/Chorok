@@ -5,8 +5,8 @@ class commentService {
   /**
    * Community : comment 생성
    */
-  static async addComment({postId, author, content}) {
-    const newComment = {postId, author, content};
+  static async addComment({userId, postId, author, content}) {
+    const newComment = {userId, postId, author, content};
 
     // db에 저장
     const createdNewComment = await Comment.createComment(newComment);
@@ -17,7 +17,7 @@ class commentService {
   /**
    * Community : commentId로 comment 읽기
    */
-  static async getComment(commentId) {
+  static async getCommentById(commentId) {
     const comment = await Comment.findCommentById(commentId);
     return comment;
   }
@@ -33,7 +33,7 @@ class commentService {
   /**
    * Community : postId로 commentList(comments) 읽기
    */
-  static async getComments({postId, page, perPage}) {
+  static async getCommentByPostId({postId, page, perPage}) {
     const comments = await Comment.findCommentsByPostId({postId, page, perPage});
     return comments;
   }

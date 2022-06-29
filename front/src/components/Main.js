@@ -1,8 +1,8 @@
 import React, { useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import Schedulepage from "../pages/Schedulepage";
 import { UserStateContext } from "../App";
+import MyGardenpage from "../pages/MyGardenpage";
 
 const Main = () => {
   const navigate = useNavigate();
@@ -15,9 +15,9 @@ const Main = () => {
       navigate("/login", { replace: true });
       return;
     }
-  }, [params, userState, navigate]);
+  }, [params, userState]);
 
-  return <Schedulepage></Schedulepage>;
+  return <MyGardenpage />;
 };
 
 export default Main;

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useParams } from "react-router-dom";
 import {
   Button,
   TextField,
@@ -11,81 +12,39 @@ import {
   Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useSnackbar } from "notistack";
 
-import { useNavigate, useParams } from "react-router-dom";
 import "./react-datepicker.css";
 import * as Api from "../../api";
-import defaultImg from "../../imgs/default_image.png";
-import { useEffect } from "react";
 
-const MyPlantEditModal = ({ openEditModal, setOpenEditModal }) => {
+const MyPlantEditModal = ({
+  plants,
+  setPlants,
+  openEditModal,
+  setOpenEditModal,
+}) => {
   const { id } = useParams();
-  const navigate = useNavigate("/mygarden");
-  // 상태 관리
-  const [image, setImage] = useState({
-    imageFile: "",
-    previewURL: defaultImg,
-  });
-  const [species, setSpecies] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [description, setDescription] = useState("");
-  const [term, setTerm] = useState(null);
 
-  useEffect(() => {
-    Api.get(`plants/${id}`).then((res) => {
-      setSpecies(res.data.plant.species);
-      setNickname(res.data.plant.nickname);
-      setDescription(res.data.plant.description);
-      setTerm(res.data.plant.termWater);
-      setImage({ previewURL: res.data.plant.imageURL });
-    });
-  }, []);
-
-  const saveImage = (e) => {
-    e.preventDefault();
-    const fileReader = new FileReader();
-
-    if (e.target.files[0]) {
-      fileReader.readAsDataURL(e.target.files[0]);
-    }
-    fileReader.onload = () => {
-      setImage({
-        imageFile: e.target.files[0],
-        previewURL: fileReader.result,
-      });
-    };
+  // 스낵바
+  const { enqueueSnackbar } = useSnackbar();
+  const styleSnackbar = (message, variant) => {
+    // variant could be success, error, warning, info, or default
+    enqueueSnackbar(message, { variant });
   };
 
-  const deleteImage = () => {
-    setImage({
-      imageFile: "",
-      previewURL: defaultImg,
-    });
-  };
   // 식물 등록하기 버튼 클릭 시 넘겨주는 데이터
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("file", image.imageFile);
     try {
-      const res = await Api.postForm("image", formData);
-      setImage({
-        imageFile: "",
-        previewURL: defaultImg,
-      });
       await Api.put(`plants/${id}`, {
-        species,
-        nickname,
-        imageURL: res.data.imageURL,
-        description,
-        termWater: Number(term),
+        species: plants.species,
+        nickname: plants.nickname,
+        description: plants.description,
+        termWater: Number(plants.termWater),
       });
       setOpenEditModal(false);
-      navigate("/mygarden");
-      window.location.reload();
     } catch (e) {
-      console.log(e);
+      styleSnackbar(e.response.data, "warning");
     }
   };
 
@@ -122,80 +81,36 @@ const MyPlantEditModal = ({ openEditModal, setOpenEditModal }) => {
               fontSize: "1rem",
             }}
           >
-            내 식물 등록
+            내 식물 정보 수정
           </DialogContentText>
           <DialogContentText
             align="center"
-            sx={{ color: "#64a68a", fontWeight: "bold", mb: 3 }}
+            sx={{ color: "#64a68a", fontFamily: "CookieRun-Regular", mb: 3 }}
           >
-            아이의 사진을 먼저 등록해주세요!
+            아이의 정보를 수정합니다.
           </DialogContentText>
-
-          <Box sx={{ textAlign: "center" }}>
-            <Box
-              component="img"
-              src={image.previewURL}
-              width="50%"
-              height="50%"
-            />
-          </Box>
-
-          <Box sx={{ textAlign: "center" }}>
-            <Button
-              component="label"
-              sx={{
-                p: 2,
-                color: "#64a68a",
-                border: "2px solid #64a68a",
-                borderRadius: "10%",
-                mr: 2,
-              }}
-            >
-              등록
-              <TextField
-                required
-                type="file"
-                accept="image/*"
-                sx={{ display: "none" }}
-                onChange={saveImage}
-              />
-            </Button>
-            <Button
-              sx={{
-                p: 2,
-                color: "#64a68a",
-                border: "2px solid #64a68a",
-                borderRadius: "10%",
-              }}
-              onClick={deleteImage}
-            >
-              삭제
-            </Button>
-          </Box>
           <TextField
-            required
             sx={{ mt: 2, bgcolor: "white" }}
             type="text"
             label="식물 종류"
             fullWidth
             variant="outlined"
             color="success"
-            value={species}
+            value={plants.species}
             onChange={(e) => {
-              setSpecies(e.target.value);
+              setPlants({ ...plants, species: e.target.value });
             }}
           />
           <TextField
-            required
             sx={{ mt: 2, bgcolor: "white" }}
             label="애칭"
             type="text"
             fullWidth
             variant="outlined"
             color="success"
-            value={nickname}
+            value={plants.nickname}
             onChange={(e) => {
-              setNickname(e.target.value);
+              setPlants({ ...plants, nickname: e.target.value });
             }}
           />
           <TextField
@@ -205,31 +120,40 @@ const MyPlantEditModal = ({ openEditModal, setOpenEditModal }) => {
             fullWidth
             variant="outlined"
             color="success"
-            value={description}
+            value={plants.description}
             onChange={(e) => {
-              setDescription(e.target.value);
+              setPlants({ ...plants, description: e.target.value });
             }}
           />
           <TextField
-            required
             sx={{ mt: 2, bgcolor: "white" }}
             label="물 주는 주기"
             type="number"
             fullWidth
             variant="outlined"
             color="success"
-            value={term}
+            value={plants.termWater}
             onChange={(e) => {
-              setTerm(e.target.value);
+              setPlants({ ...plants, termWater: e.target.value });
             }}
           />
         </DialogContent>
         <DialogActions sx={{ pb: 5, bgcolor: "white" }}>
           <Button
-            sx={{ mx: "auto", bgcolor: "#64a68a", color: "white" }}
+            sx={{
+              mx: "auto",
+              bgcolor: "#64a68a",
+              color: "white",
+              ":hover": {
+                bgcolor: "#64a68a",
+                color: "white",
+              },
+            }}
             type="submit"
+            variant="contained"
+            color="success"
           >
-            추가
+            수정
           </Button>
         </DialogActions>
       </Box>

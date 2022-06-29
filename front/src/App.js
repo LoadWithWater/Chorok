@@ -9,9 +9,11 @@ import React, {
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
+import { SnackbarProvider } from "notistack";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Loading from "./components/Loading";
 import * as Api from "./api";
 import { loginReducer } from "./reducer";
 import "./App.css";
@@ -21,23 +23,27 @@ const Registerpage = lazy(() => import("./pages/Registerpage"));
 const Accountpage = lazy(() => import("./pages/Accountpage"));
 const Main = lazy(() => import("./components/Main"));
 const MyGardenpage = lazy(() => import("./pages/MyGardenpage"));
-const MyPlantDetail = lazy(() =>
-  import("./components/mygarden/MyPlantDetail")
+const MyPlant = lazy(() => import("./components/mygarden/MyPlant"));
+const MyScheduleList = lazy(() =>
+  import("./components/schedule/MyScheduleList")
 );
 const Communitypage = lazy(() => import("./pages/Communitypage"));
-const CommunityInfoList = lazy(() => 
-  import("./components/community/CommunityInfoList")
+const CommunityPosting = lazy(() =>
+  import("./components/community/CommunityPosting")
 );
-const CommunityFreeList = lazy(() => 
-  import("./components/community/CommunityFreeList")
+const CommunityCardDetail = lazy(() =>
+  import("./components/community/CommunityCardDetail")
 );
-
+const Diagnosispage = lazy(() => import("./pages/Diagnosispage"));
+const DiagnosisPicture = lazy(() =>
+  import("./components/diagnosis/DiagnosisPicture")
+);
 export const UserStateContext = createContext(null);
 export const DispatchContext = createContext(null);
 
 const theme = createTheme({
   typography: {
-    fontFamily: "IBM Plex Sans KR, sans-serif",
+    fontFamily: "EF_Diary",
   },
 });
 
@@ -75,32 +81,65 @@ function App() {
     fetchCurrentUser();
   }, []);
 
-  if (!isFetchCompleted) {
-    return "loading...";
-  }
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <DispatchContext.Provider value={dispatch}>
         <UserStateContext.Provider value={userState}>
-          <Router>
-            <Header />
-            <Footer />
-            <Suspense fallback={<div>Loading..</div>}>
-              <Routes>
-                <Route path="/" exact element={<Main />} />
-                <Route path="/login" element={<Loginpage />} />
-                <Route path="/register" element={<Registerpage />} />
-                <Route path="/account" element={<Accountpage />} />
-                <Route path="/mygarden" element={<MyGardenpage />} />
-                <Route path="/mygarden/:id" element={<MyPlantDetail />} />
-                <Route path="/community" element={<Communitypage />} />
-                <Route path="/community/CommunityInfoList" element={<CommunityInfoList />} />
-                <Route path="/community/CommunityFreeList" element={<CommunityFreeList />} />
-                <Route path="*" element={<Main />} />
-              </Routes>
-            </Suspense>
-          </Router>
+          <SnackbarProvider
+            maxSnack={3}
+            sx={{
+              "& .SnackbarContent-root": {},
+            }}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Router>
+              <Header />
+              <Footer />
+              <Suspense>
+                <Routes>
+                  <Route path="/" exact element={<Main />} />
+                  <Route path="/login" element={<Loginpage />} />
+                  <Route path="/register" element={<Registerpage />} />
+                  <Route path="/account" element={<Accountpage />} />
+                  <Route path="/mygarden" element={<MyGardenpage />} />
+                  <Route path="/mygarden/:id" element={<MyPlant />} />
+                  <Route
+                    path="/mygarden/myschedule"
+                    element={<MyScheduleList />}
+                  />
+                  <Route path="/diagnosis" element={<Diagnosispage />} />
+                  <Route
+                    path="/diagnosis/picture"
+                    element={<DiagnosisPicture />}
+                  />
+                  <Route path="/community" element={<Communitypage />} />
+                  {/* <Route
+                    path="/community/infoBoard"
+                    element={<Communitypage />}
+                  /> */}
+                  <Route
+                    path="/community/infoBoard/:id"
+                    element={<CommunityCardDetail />}
+                  />
+                  {/* <Route
+                    path="/community/freeBoard"
+                    element={<Communitypage />}
+                  /> */}
+                  <Route
+                    path="/community/freeBoard/:id"
+                    element={<CommunityCardDetail />}
+                  />
+                  <Route
+                    path="/community/posting"
+                    element={<CommunityPosting />}
+                  />
+
+                  <Route path="*" element={<Main />} />
+                </Routes>
+              </Suspense>
+            </Router>
+          </SnackbarProvider>
         </UserStateContext.Provider>
       </DispatchContext.Provider>
     </ThemeProvider>
