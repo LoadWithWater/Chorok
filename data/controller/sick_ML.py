@@ -9,10 +9,10 @@ import json
 from PIL import Image
 import numpy as np
 import ssl
-# from pytorch_resnet_cifar10 import resnet
-# from pytorch_metric_learning.utils import common_functions as c_f
-# from pytorch_metric_learning.utils.inference import InferenceModel, MatchFinder
-# from pytorch_metric_learning.distances import CosineSimilarity
+from pytorch_resnet_cifar10 import resnet
+from pytorch_metric_learning.utils import common_functions as c_f
+from pytorch_metric_learning.utils.inference import InferenceModel, MatchFinder
+from pytorch_metric_learning.distances import CosineSimilarity
 ml = Blueprint('ml', __name__)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 load_dotenv()
@@ -87,19 +87,20 @@ def predict(name):
     ])
     img=VALID_TRANSFORM(img)
     img = img.unsqueeze(0)
-    # #metric_learning
-    # match_finder = MatchFinder(distance=CosineSimilarity(), threshold=0.7)
-    # new_model=torch.nn.DataParallel(resnet.resnet20())
-    # new_model.load_state_dict(torch.load('index.pt'))
-    # new_model.module.linear = c_f.Identity()
-    # inference_model = InferenceModel(new_model, match_finder=match_finder)
-    # inference_model.load_knn_func("firstmodel.index")
-    # distances,_ = inference_model.get_nearest_neighbors(img, k=1)
-    # if distances>=0.032:
-    #     return "촬영 예시에 맞게 찍어주세요"
+    #metric_learning
+    match_finder = MatchFinder(distance=CosineSimilarity(), threshold=0.7)
+    new_model=torch.nn.DataParallel(resnet.resnet20())
+    new_model.load_state_dict(torch.load('index.pt'))
+    new_model.module.linear = c_f.Identity()
+    inference_model = InferenceModel(new_model, match_finder=match_finder)
+    inference_model.load_knn_func("firstmodel.index")
+    distances,_ = inference_model.get_nearest_neighbors(img, k=1)
+    print(distances)
+    if distances>=0.045:
+        return "misCategory" #이상한 거 올경우
     idx,temp=work(img)
     stat=[temp[i] for i in idx]
-    my_dict={'rust': 0,'frog eye leaf spot': 1,'healthy': 2,'powdery mildew': 3,'scab': 4}#,'rust':4}
+    my_dict={'rust': 0,'frog eye leaf spot': 1,'healthy': 2,'powdery mildew': 3,'scab': 4}#':4}
     def get_key(val):
         for key, value in my_dict.items():
             if val == value:
@@ -112,5 +113,6 @@ def predict(name):
             if stat[i]>=0.6:
                 result_dict[get_key(idx[i])]=round(float(stat[i]),3)
             else: pass
-        else: return "잎을 한장만 찍어주세요!"
+        else: return "misTest"
+    #print(result_dict)
     return jsonify(result_dict)
